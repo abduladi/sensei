@@ -373,7 +373,7 @@ Class Sensei_WC{
 
 				$product = self::get_product_object( $item_id );
 
-				$product_courses = Sensei()->course->get_product_courses( $product->id );
+				$product_courses = is_object( $product ) ? Sensei()->course->get_product_courses( $product->id ) : array();
 
 				foreach ( $product_courses as $course ) {
 					$course_id = $course->ID;
@@ -557,6 +557,10 @@ Class Sensei_WC{
 		if ( 0 < $product_id ) {
 
 			$product = wc_get_product( $product_id );
+
+			if ( ! is_object( $product ) ) {
+				return false;
+			}
 
 			$parent_id = '';
 			if( isset( $product->variation_id ) && 0 < intval( $product->variation_id ) ) {
@@ -1171,8 +1175,6 @@ Class Sensei_WC{
 
 			} // End If Statement
 
-			$_product = self::get_product_object( $item_id, $product_type );
-
 			// Get courses that use the WC product
 			$courses = array();
 
@@ -1333,7 +1335,7 @@ Class Sensei_WC{
 			$_product = Sensei_WC::get_product_object( $item_id, $product_type );
 
 			// Get courses that use the WC product
-			$courses = Sensei()->course->get_product_courses( $_product->id );
+			$courses = is_object( $_product ) ? Sensei()->course->get_product_courses( $_product->id ) : array();
 
 			// Loop and update those courses
 			foreach ( $courses as $course_item ) {
@@ -1691,10 +1693,8 @@ Class Sensei_WC{
 		// if the course has no subscription WooCommerce product attached to return the permissions as is
 		$product_id = Sensei_WC::get_course_product_id( $course_id );
 		$product = wc_get_product( $product_id );
-		if( ! in_array( $product->get_type(), self::get_subscription_types() ) ){
-
+		if ( is_object( $product ) && ! in_array( $product->get_type(), self::get_subscription_types() ) ) {
 			return $user_access_permission;
-
 		}
 
 		// give access if user has active subscription on the product otherwise restrict it.
@@ -1921,6 +1921,10 @@ Class Sensei_WC{
 			return false;
 
 		$course_product = wc_get_product( $course_product_id );
+
+		if ( ! is_object( $course_product ) ) {
+			return false;
+		}
 
 		return $course_product->is_purchasable();
 
